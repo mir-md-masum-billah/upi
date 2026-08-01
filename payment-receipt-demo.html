@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dynamic Payment Receipt</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Google+Sans:ital,opsz,wght@0,17..18,400..700;1,17..18,400..700&display=swap"
+    rel="stylesheet">
+
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#f6f7f9">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Payment Receipt">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    body {
+      font-family: 'Google Sans', 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: #f6f7f9;
+      color: #1a1c1e;
+      display: flex;
+      justify-content: center;
+      padding: 32px 16px;
+      min-height: 100vh;
+      margin: 0;
+    }
+
+    .receipt {
+      width: 100%;
+      max-width: 380px;
+      margin-top: 28px;
+      text-align: center;
+    }
+
+    .avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      color: white;
+      font-size: 26px;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      transition: background-color 0.1s ease;
+      background: #188038; /* fallback, overridden by JS */
+    }
+
+    .to-name {
+      font-size: 17px;
+      font-weight: 400;
+      margin: 0;
+    }
+
+    .to-phone {
+      font-size: 14px;
+      color: #5f6368;
+      margin: 4px 0 24px;
+      letter-spacing: 0.5px;
+    }
+
+    .amount {
+      font-size: 52px;
+      font-weight: 400;
+      margin: 0 0 28px;
+      line-height: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .amount .rupee {
+      font-size: 30px;
+      font-weight: 400;
+      margin-top: 6px;
+    }
+
+    .pay-again {
+      background: #1a73e8;
+      color: white;
+      border: none;
+      border-radius: 24px;
+      padding: 11px 28px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin: 22px 0 6px;
+      font-size: 14px;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #188038;
+      color: white;
+      font-weight: bold;
+      font-size: 7px;
+      padding-left: 1px;
+      display: flex;
+      align-items: center;
+      text-align: center;
+      justify-content: center;
+    }
+
+    .divider {
+      border: none;
+      border-top: 1px solid #e8eaed;
+      margin: 12px 0;
+    }
+
+    .timestamp {
+      font-size: 13px;
+      color: #5f6368;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border: 1px solid #e8eaed;
+      border-radius: 12px;
+      text-align: left;
+      overflow: hidden;
+    }
+
+    .bank-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      border-bottom: 1px solid #e8eaed;
+    }
+
+    .bank-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      border: 1px solid rgb(194, 194, 194);
+      height: 27px;
+      width: 41px;
+    }
+
+    .bank-icon img {
+      height: 29px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #1a73e8;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .bank-name {
+      font-size: 14px;
+      font-weight: 500;
+      flex: 1;
+    }
+
+    .chevron img {
+      color: black;
+      width: 12px;
+    }
+
+    .details {
+      padding: 4px 16px 16px;
+    }
+
+    .detail-block {
+      padding: 12px 0;
+    }
+
+    .detail-label {
+      font-size: 13px;
+      font-weight: 500;
+      margin: 0 0 4px;
+    }
+
+    .detail-value {
+      font-size: 13px;
+      color: #5f6368;
+      margin: 0;
+      word-break: break-all;
+    }
+
+    .footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-self: center;
+      gap: 60px;
+      margin: auto;
+      color: #939599;
+      padding-top: 15px;
+    }
+
+    .powered-by {
+      font-size: 6px;
+    }
+
+    .powered-by img {
+      height: 16px;
+    }
+
+    .brand-mark img {
+      height: 20px;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      .receipt {
+        animation: fadeIn 0.3s ease-out;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="receipt" id="app">
+    <div class="avatar" id="avatarLetter" style="background: #188038;">S</div>
+    <p class="to-name" id="toName">To Shubh Shukla</p>
+    <p class="to-phone" id="toPhone">+91••••••3326</p>
+
+    <div class="amount"><span class="rupee">₹</span><span id="amountDisplay">3,000</span></div>
+
+    <button class="pay-again" onclick="location.reload()">Pay again</button>
+
+    <div class="status">
+      <span class="status-dot">✓</span>
+      <span>Completed</span>
+    </div>
+    <hr class="divider">
+    <p class="timestamp" id="timestampDisplay">11 Jun 2026, 9:04 pm</p>
+
+    <div class="card">
+      <div class="bank-row">
+        <div class="bank-icon"><img src="https://images.seeklogo.com/logo-png/39/2/sbi-logo-png_seeklogo-398127.png"
+            alt="bank-icon"></div>
+        <div class="bank-name" id="bankName">State Bank of India 9653</div>
+        <div class="chevron"><img src="https://www.iconpacks.net/icons/2/free-arrow-down-icon-3101-thumb.png" alt="down arrow"></div>
+      </div>
+      <div class="details">
+        <div class="detail-block">
+          <p class="detail-label">UPI transaction ID</p>
+          <p class="detail-value" id="upiTxnId">616275039550</p>
+        </div>
+        <div class="detail-block">
+          <p class="detail-label" id="toLabel">To: Shubh Shukla</p>
+          <p class="detail-value" id="toDetail">Google Pay • shubhshukla1302@okhdfcbank</p>
+        </div>
+        <div class="detail-block">
+          <p class="detail-label">From: <span id="fromName">Thangavel</span></p>
+          <p class="detail-value" id="fromDetail">Google Pay • thangavelt186@oksbi</p>
+        </div>
+        <div class="detail-block">
+          <p class="detail-label">Transaction ID</p>
+          <p class="detail-value" id="txnId">CICAgJi-zvaqeQ</p>
+        </div>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="powered-by">
+        <p>POWERED BY</p><img src="https://indiadesignsystem.bombaydc.com/assets/india-designs/display/UPI/black.svg"
+          alt="">
+      </div>
+      <div class="brand-mark"><img src="https://storage.googleapis.com/gweb-uniblog-publish-prod/images/GooglePayLogo.width-500.format-webp.webp" alt="brand-mark"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      // ---------- helpers ----------
+      const random = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+      // 100 Real Indian Receiver Names with UPI IDs and Phone Numbers
+      const recipientData = [
+        { name: 'Shubh Shukla', upi: 'shubhshukla1302@okhdfcbank', phone: '+91••••••3326' },
+        { name: 'Priya Patel', upi: 'priya.patel@okicici', phone: '+91••••••8745' },
+        { name: 'Amit Kumar', upi: 'amit.kumar@oksbi', phone: '+91••••••2198' },
+        { name: 'Rahul Sharma', upi: 'rahul.sharma@okaxis', phone: '+91••••••4567' },
+        { name: 'Sneha Reddy', upi: 'sneha.r@okicici', phone: '+91••••••7890' },
+        { name: 'Vikram Singh', upi: 'vikram.s@oksbi', phone: '+91••••••1234' },
+        { name: 'Anjali Nair', upi: 'anjali.n@okaxis', phone: '+91••••••5678' },
+        { name: 'Arjun Menon', upi: 'arjun.m@okhdfcbank', phone: '+91••••••9012' },
+        { name: 'Kavya Iyer', upi: 'kavya.i@okicici', phone: '+91••••••3456' },
+        { name: 'Deepak Verma', upi: 'deepak.v@oksbi', phone: '+91••••••7891' },
+        { name: 'Meera Joshi', upi: 'meera.j@okaxis', phone: '+91••••••2345' },
+        { name: 'Raj Kumar', upi: 'raj.k@okhdfcbank', phone: '+91••••••6789' },
+        { name: 'Pooja Gupta', upi: 'pooja.g@okicici', phone: '+91••••••0123' },
+        { name: 'Suresh Rao', upi: 'suresh.r@oksbi', phone: '+91••••••4560' },
+        { name: 'Divya Menon', upi: 'divya.m@okaxis', phone: '+91••••••8901' },
+        { name: 'Manoj Singh', upi: 'manoj.s@okhdfcbank', phone: '+91••••••2346' },
+        { name: 'Neha Agarwal', upi: 'neha.a@okicici', phone: '+91••••••6780' },
+        { name: 'Ravi Desai', upi: 'ravi.d@oksbi', phone: '+91••••••0124' },
+        { name: 'Sunita Reddy', upi: 'sunita.r@okaxis', phone: '+91••••••4561' },
+        { name: 'Karan Malhotra', upi: 'karan.m@okhdfcbank', phone: '+91••••••8902' },
+        { name: 'Ananya Sharma', upi: 'ananya.s@okicici', phone: '+91••••••2347' },
+        { name: 'Rohan Patel', upi: 'rohan.p@oksbi', phone: '+91••••••6781' },
+        { name: 'Sanya Gupta', upi: 'sanya.g@okaxis', phone: '+91••••••0125' },
+        { name: 'Vivek Kumar', upi: 'vivek.k@okhdfcbank', phone: '+91••••••4562' },
+        { name: 'Ishita Nair', upi: 'ishita.n@okicici', phone: '+91••••••8903' },
+        { name: 'Gaurav Singh', upi: 'gaurav.s@oksbi', phone: '+91••••••2348' },
+        { name: 'Ritu Mehta', upi: 'ritu.m@okaxis', phone: '+91••••••6782' },
+        { name: 'Aakash Reddy', upi: 'aakash.r@okhdfcbank', phone: '+91••••••0126' },
+        { name: 'Shreya Sharma', upi: 'shreya.s@okicici', phone: '+91••••••4563' },
+        { name: 'Nikhil Patel', upi: 'nikhil.p@oksbi', phone: '+91••••••8904' },
+        { name: 'Tanya Verma', upi: 'tanya.v@okaxis', phone: '+91••••••2349' },
+        { name: 'Rahul Singh', upi: 'rahul.singh@okhdfcbank', phone: '+91••••••6783' },
+        { name: 'Kriti Agarwal', upi: 'kriti.a@okicici', phone: '+91••••••0127' },
+        { name: 'Varun Kumar', upi: 'varun.k@oksbi', phone: '+91••••••4564' },
+        { name: 'Simran Kaur', upi: 'simran.k@okaxis', phone: '+91••••••8905' },
+        { name: 'Arvind Sharma', upi: 'arvind.s@okhdfcbank', phone: '+91••••••2350' },
+        { name: 'Richa Gupta', upi: 'richa.g@okicici', phone: '+91••••••6784' },
+        { name: 'Pankaj Kumar', upi: 'pankaj.k@oksbi', phone: '+91••••••0128' },
+        { name: 'Sakshi Reddy', upi: 'sakshi.r@okaxis', phone: '+91••••••4565' },
+        { name: 'Tarun Nair', upi: 'tarun.n@okhdfcbank', phone: '+91••••••8906' },
+        { name: 'Shivani Patel', upi: 'shivani.p@okicici', phone: '+91••••••2351' },
+        { name: 'Rakesh Mehta', upi: 'rakesh.m@oksbi', phone: '+91••••••6785' },
+        { name: 'Swati Singh', upi: 'swati.s@okaxis', phone: '+91••••••0129' },
+        { name: 'Prakash Reddy', upi: 'prakash.r@okhdfcbank', phone: '+91••••••4566' },
+        { name: 'Aishwarya Sharma', upi: 'aishwarya.s@okicici', phone: '+91••••••8907' },
+        { name: 'Mahesh Kumar', upi: 'mahesh.k@oksbi', phone: '+91••••••2352' },
+        { name: 'Sonal Gupta', upi: 'sonal.g@okaxis', phone: '+91••••••6786' },
+        { name: 'Rakesh Singh', upi: 'rakesh.singh@okhdfcbank', phone: '+91••••••0130' },
+        { name: 'Kavita Nair', upi: 'kavita.n@okicici', phone: '+91••••••4567' },
+        { name: 'Sanjay Patel', upi: 'sanjay.p@oksbi', phone: '+91••••••8908' },
+        { name: 'Geeta Reddy', upi: 'geeta.r@okaxis', phone: '+91••••••2353' },
+        { name: 'Vijay Kumar', upi: 'vijay.k@okhdfcbank', phone: '+91••••••6787' },
+        { name: 'Pallavi Sharma', upi: 'pallavi.s@okicici', phone: '+91••••••0131' },
+        { name: 'Mukesh Singh', upi: 'mukesh.s@oksbi', phone: '+91••••••4568' },
+        { name: 'Anita Verma', upi: 'anita.v@okaxis', phone: '+91••••••8909' },
+        { name: 'Rajesh Gupta', upi: 'rajesh.g@okhdfcbank', phone: '+91••••••2354' },
+        { name: 'Suman Reddy', upi: 'suman.r@okicici', phone: '+91••••••6788' },
+        { name: 'Ajay Kumar', upi: 'ajay.k@oksbi', phone: '+91••••••0132' },
+        { name: 'Rekha Singh', upi: 'rekha.s@okaxis', phone: '+91••••••4569' },
+        { name: 'Naresh Patel', upi: 'naresh.p@okhdfcbank', phone: '+91••••••8910' },
+        { name: 'Jyoti Sharma', upi: 'jyoti.s@okicici', phone: '+91••••••2355' },
+        { name: 'Sandeep Reddy', upi: 'sandeep.r@oksbi', phone: '+91••••••6789' },
+        { name: 'Mamta Gupta', upi: 'mamta.g@okaxis', phone: '+91••••••0133' },
+        { name: 'Ramesh Kumar', upi: 'ramesh.k@okhdfcbank', phone: '+91••••••4570' },
+        { name: 'Sarita Singh', upi: 'sarita.s@okicici', phone: '+91••••••8911' },
+        { name: 'Vinod Sharma', upi: 'vinod.s@oksbi', phone: '+91••••••2356' },
+        { name: 'Vandana Reddy', upi: 'vandana.r@okaxis', phone: '+91••••••6790' },
+        { name: 'Kamal Kumar', upi: 'kamal.k@okhdfcbank', phone: '+91••••••0134' },
+        { name: 'Shashi Patel', upi: 'shashi.p@okicici', phone: '+91••••••4571' },
+        { name: 'Lata Gupta', upi: 'lata.g@oksbi', phone: '+91••••••8912' },
+        { name: 'Dinesh Singh', upi: 'dinesh.s@okaxis', phone: '+91••••••2357' },
+        { name: 'Usha Reddy', upi: 'usha.r@okhdfcbank', phone: '+91••••••6791' },
+        { name: 'Mohan Kumar', upi: 'mohan.k@okicici', phone: '+91••••••0135' },
+        { name: 'Savitri Sharma', upi: 'savitri.s@oksbi', phone: '+91••••••4572' },
+        { name: 'Babu Singh', upi: 'babu.s@okaxis', phone: '+91••••••8913' },
+        { name: 'Lakshmi Reddy', upi: 'lakshmi.r@okhdfcbank', phone: '+91••••••2358' },
+        { name: 'Ganesh Kumar', upi: 'ganesh.k@okicici', phone: '+91••••••6792' },
+        { name: 'Radha Patel', upi: 'radha.p@oksbi', phone: '+91••••••0136' },
+        { name: 'Ranjit Singh', upi: 'ranjit.s@okaxis', phone: '+91••••••4573' },
+        { name: 'Parvati Reddy', upi: 'parvati.r@okhdfcbank', phone: '+91••••••8914' },
+        { name: 'Krishna Kumar', upi: 'krishna.k@okicici', phone: '+91••••••2359' },
+        { name: 'Asha Sharma', upi: 'asha.s@oksbi', phone: '+91••••••6793' },
+        { name: 'Nandini Singh', upi: 'nandini.s@okaxis', phone: '+91••••••0137' },
+        { name: 'Chandran Patel', upi: 'chandran.p@okhdfcbank', phone: '+91••••••4574' },
+        { name: 'Shanti Reddy', upi: 'shanti.r@okicici', phone: '+91••••••8915' },
+        { name: 'Ravi Kumar', upi: 'ravi.kumar@oksbi', phone: '+91••••••2360' },
+        { name: 'Durga Singh', upi: 'durga.s@okaxis', phone: '+91••••••6794' },
+        { name: 'Karthik Sharma', upi: 'karthik.s@okhdfcbank', phone: '+91••••••0138' },
+        { name: 'Maya Reddy', upi: 'maya.r@okicici', phone: '+91••••••4575' },
+        { name: 'Surya Kumar', upi: 'surya.k@oksbi', phone: '+91••••••8916' },
+        { name: 'Chitra Singh', upi: 'chitra.s@okaxis', phone: '+91••••••2361' },
+        { name: 'Bhaskar Patel', upi: 'bhaskar.p@okhdfcbank', phone: '+91••••••6795' },
+        { name: 'Revathi Sharma', upi: 'revathi.s@okicici', phone: '+91••••••0139' },
+        { name: 'Naveen Reddy', upi: 'naveen.r@oksbi', phone: '+91••••••4576' },
+        { name: 'Padma Singh', upi: 'padma.s@okaxis', phone: '+91••••••8917' },
+        { name: 'Sivakumar Kumar', upi: 'sivakumar.k@okhdfcbank', phone: '+91••••••2362' },
+        { name: 'Selvi Sharma', upi: 'selvi.s@okicici', phone: '+91••••••6796' },
+        { name: 'Murugan Reddy', upi: 'murugan.r@oksbi', phone: '+91••••••0140' },
+        { name: 'Valli Singh', upi: 'valli.s@okaxis', phone: '+91••••••4577' }
+      ];
+
+      // Senders (3 real names)
+      const senderData = [
+        { name: 'Thangavel', upi: 'thangavelt186@oksbi' },
+        { name: 'Rajeswari', upi: 'rajeswari.r@okicici' },
+        { name: 'Muralidharan', upi: 'murali.m@okaxis' }
+      ];
+
+      // ---------- generate random receipt data ----------
+      function generateReceiptData() {
+        const sender = senderData[random(0, senderData.length - 1)];
+        const recipient = recipientData[random(0, recipientData.length - 1)];
+
+        // Amount: between 5000 and 8000, always ends with 0
+        const base = random(500, 800); // 500 to 800
+        const amount = base * 10; // now 5000, 5010, ... 8000
+        const formattedAmount = amount.toLocaleString('en-IN');
+
+        const upiTxn = String(random(100000000000, 999999999999));
+
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let txnId = '';
+        for (let i = 0; i < 12; i++) {
+          txnId += chars.charAt(random(0, chars.length - 1));
+        }
+
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const maxSeconds = Math.floor((now.getTime() - today.getTime()) / 1000);
+        const randomSeconds = random(0, Math.max(0, maxSeconds));
+        const t = new Date(today.getTime() + randomSeconds * 1000);
+        const dateStr = t.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+        const timeStr = t.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit', hour12: true });
+        const timestamp = `${dateStr}, ${timeStr}`;
+
+        const bankNumber = String(random(1000, 9999));
+        const bankName = `State Bank of India ${bankNumber}`;
+
+        const avatarLetter = recipient.name.charAt(0).toUpperCase();
+
+        // generate a bright, vibrant background color for avatar
+        const hue = random(0, 360);
+        const sat = random(55, 85);
+        const lig = random(40, 65);
+        const avatarBg = `hsl(${hue}, ${sat}%, ${lig}%)`;
+
+        return {
+          senderName: sender.name,
+          senderUpi: sender.upi,
+          recipientName: recipient.name,
+          recipientUpi: recipient.upi,
+          recipientPhone: recipient.phone,
+          amount: formattedAmount,
+          upiTxn,
+          txnId,
+          timestamp,
+          bankName,
+          bankNumber,
+          avatarLetter,
+          avatarBg
+        };
+      }
+
+      // ---------- render ----------
+      function renderReceipt() {
+        const data = generateReceiptData();
+
+        const avatarEl = document.getElementById('avatarLetter');
+        avatarEl.textContent = data.avatarLetter;
+        avatarEl.style.backgroundColor = data.avatarBg;
+
+        document.getElementById('toName').textContent = `To ${data.recipientName}`;
+        document.getElementById('toPhone').textContent = data.recipientPhone;
+        document.getElementById('amountDisplay').textContent = data.amount;
+        document.getElementById('timestampDisplay').textContent = data.timestamp;
+
+        document.getElementById('bankName').textContent = data.bankName;
+        document.getElementById('upiTxnId').textContent = data.upiTxn;
+
+        document.getElementById('toLabel').textContent = `To: ${data.recipientName}`;
+        document.getElementById('toDetail').textContent = `Google Pay • ${data.recipientUpi}`;
+
+        document.getElementById('fromName').textContent = data.senderName;
+        document.getElementById('fromDetail').textContent = `Google Pay • ${data.senderUpi}`;
+
+        document.getElementById('txnId').textContent = data.txnId;
+      }
+
+      // initial render
+      renderReceipt();
+
+      // ---------- Register Service Worker ----------
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js')
+            .then(reg => console.log('SW registered:', reg))
+            .catch(err => console.warn('SW registration failed:', err));
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
